@@ -23,47 +23,65 @@
     <div id="map"></div>
     <div id="capture"></div>
     <script>
-        // XXX: GLOBAL!
-        var current_pos = getPosition()
+        function handleLocationError(error) {
+            alert("Geolocation failed, maybe it's not supported by your browser. :( Error: " + error);
+        }
 
-        function getPosition() {
+        function updatePos(pos) {
+            // re-center the map only if you've moved more than the specified threshold
+            var dist_thresh_km = 0.003048; // 0.003048 km ~= 10 ft.
+            var center = map.getCenter();
+            var delta_km = getDistanceFromLatLonInKm(pos.lat(), pos.lng(), center.lat(), center.lng());
+            console.log("moved " + delta_km + " km.");
+            if (delta_km > dist_thresh_km) {
+                console.log("updatePos to new pos! " + pos);
+                console.log("this is where you tell the server");
+                map.panTo(pos);
+            }
+            // otherwise do nothing.
+        }
+
+        function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {
+            // Uses Haversine formula, taken from
+            // http://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula
+            var R = 6371; // Radius of the earth in km
+            var dLat = deg2rad(lat2-lat1);  // deg2rad below
+            var dLon = deg2rad(lon2-lon1);
+            var a =
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            var d = R * c; // Distance in km
+            return d;
+        }
+
+        function deg2rad(deg) {
+          return deg * (Math.PI/180)
+        }
+
+        function wait_to_load() {
+            // wait until position is received before loading
             var geo_options = {
                 enableHighAccuracy: true,
-
             }
+
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
-                    var pos = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    };
+                    var init_pos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+                    console.log("init_pos: " + init_pos);
+                    initMap(init_pos);
 
-                    current_pos = new google.maps.LatLng(pos);
-                    console.log("current_pos: " + current_pos);
-                }, function(error) {
-                    console.log(error);
-                    handleLocationError(error);
-                }, geo_options);
+                },
+                handleLocationError,
+                geo_options);
             } else {
                 // Browser doesn't support Geolocation
                 handleLocationError(null);
             }
         }
 
-        function handleLocationError(error) {
-            alert("Geolocation failed, maybe it's not supported by your browser. :( Error: " + error);
-        }
-
-        function wait_to_load(){
-            var loop = window.setInterval(function(){
-                if (current_pos) {
-                    initMap();
-                    clearInterval(loop);
-                }
-            }, 1000);
-        }
-
-        function initMap() {
+        function initMap(init_pos) {
             var customMapType = new google.maps.StyledMapType([{
                 "stylers": [{
                     "invert_lightness": true
@@ -92,7 +110,7 @@
             }], {
                 name: 'Ghoulish Style'
             });
-            var customMapTypeId = 'custom_style';
+            var customMapTypeId = 'ghoulish_style';
 
             // define a fixed zoom level
             var Zoom = 16;
@@ -102,7 +120,7 @@
                 zoom: Zoom,
                 minZoom: Zoom,
                 maxZoom: Zoom,
-                center: current_pos,
+                center: init_pos,
                 disableDefaultUI: true,
                 draggable: false,
                 scrollwheel: false,
@@ -115,9 +133,13 @@
             map.mapTypes.set(customMapTypeId, customMapType);
             map.setMapTypeId(customMapTypeId);
 
-            function moveToPosition(pos) {
-                map.panTo(pos);
-            }
+            var pos_watcher = navigator.geolocation.watchPosition(function(position) {
+                var pos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+                updatePos(pos);
+            }, handleLocationError, {
+                enableHighAccuracy: true,
+                maximumAge: 15000 //longer than 15 sec will be ignored
+            });
 
             //XXX: hack for debugging
             window.map = map;
