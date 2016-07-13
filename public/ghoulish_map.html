@@ -30,7 +30,7 @@
     <div id="capture"></div>
     <script>
         function handleLocationError(error) {
-            alert("Geolocation failed, maybe it's not supported by your browser. :( Error: " + error);
+            alert("Geolocation failed, maybe it's not supported by your browser. :( \nError(" + error.code + "): " + error.message);
         }
 
         function updatePos(pos) {
@@ -42,6 +42,7 @@
             if (delta_km > dist_thresh_km) {
                 console.log("updatePos to new pos! " + pos);
                 console.log("this is where you tell the server");
+                you_are_here.setCenter(pos); //for a marker, it's setPosition...
                 map.panTo(pos);
             }
             // otherwise do nothing.
@@ -139,6 +140,18 @@
             map.mapTypes.set(customMapTypeId, customMapType);
             map.setMapTypeId(customMapTypeId);
 
+            // player location marker
+            var you_are_here = new google.maps.Circle({
+                center: map.center,
+                map: map,
+                radius: 15,
+                strokeColor: '#FF0000',
+                strokeOpacity: 0.8,
+                strokeWeight: 2,
+                fillColor: '#FF0000',
+                fillOpacity: 0.5
+            });
+
             var pos_watcher = navigator.geolocation.watchPosition(function(position) {
                 var pos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
                 updatePos(pos);
@@ -149,10 +162,12 @@
 
             //XXX: hack for debugging
             window.map = map;
+            window.you_are_here = you_are_here;
         }
 
         // try to make map fullscreen. Works in firefox desktop, but
         // not on android chrome (does request fullscreen, but just see black...?)
+        // and if you download the browser app, it fullscreens it anyway!
         /*
         var fullscreen_el = document.getElementById("map");
         map_el.addEventListener("click", function(e) {
