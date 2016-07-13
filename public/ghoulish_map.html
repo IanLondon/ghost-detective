@@ -29,6 +29,15 @@
     <div id="map"></div>
     <div id="capture"></div>
     <script>
+        function do_debug_stuff(map) {
+            // add a marker on the corner
+            var church = new google.maps.Marker({
+                position: new google.maps.LatLng(40.746507, -73.947718),
+                map: map
+            });
+            console.log("added church manually at " + church.position);
+        }
+
         function handleLocationError(error) {
             alert("Geolocation failed, maybe it's not supported by your browser. :( \nError(" + error.code + "): " + error.message);
         }
@@ -161,6 +170,7 @@
             });
 
             //XXX: hack for debugging
+            do_debug_stuff(map);
             window.map = map;
             window.you_are_here = you_are_here;
         }
