@@ -151,12 +151,16 @@
             window.map = map;
         }
 
-        // try to make map fullscreen
-        var map_el = document.getElementById("map");
+        // try to make map fullscreen. Works in firefox desktop, but
+        // not on android chrome (does request fullscreen, but just see black...?)
+        /*
+        var fullscreen_el = document.getElementById("map");
         map_el.addEventListener("click", function(e) {
-            requestFullscreen(map_el);
+            //
+            requestFullscreen(fullscreen_el);
             console.log("requesting full screen...");
         });
+        */
 
     </script>
     <script src="fullscreen_helper.js"></script>
