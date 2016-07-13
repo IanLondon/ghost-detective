@@ -106,6 +106,7 @@
                 disableDefaultUI: true,
                 draggable: false,
                 scrollwheel: false,
+                clickableIcons: false, //can't click icons of locations
                 mapTypeControlOptions: {
                     mapTypeIds: [google.maps.MapTypeId.ROADMAP, customMapTypeId]
                 }
@@ -117,7 +118,9 @@
             function moveToPosition(pos) {
                 map.panTo(pos);
             }
-            window.map = map; //hack
+
+            //XXX: hack for debugging
+            window.map = map;
         }
     </script>
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAKtPUCQgDEe0xOEmU-lMnNpGeWQ1id4lo&callback=wait_to_load">
