@@ -1,0 +1,4 @@
+public/sound/*
+raw_media/
+*_secret.*
+*.pyc
