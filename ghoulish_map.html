@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Ghoulish map</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <div id="capture"></div>
+    <script>
+        // XXX: GLOBAL!
+        var current_pos = getPosition()
+
+        function getPosition() {
+            var geo_options = {
+                enableHighAccuracy: true,
+
+            }
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+
+                    current_pos = new google.maps.LatLng(pos);
+                    console.log("current_pos: " + current_pos);
+                }, function(error) {
+                    console.log(error);
+                    handleLocationError(error);
+                }, geo_options);
+            } else {
+                // Browser doesn't support Geolocation
+                handleLocationError(null);
+            }
+        }
+
+        function handleLocationError(error) {
+            alert("Geolocation failed, maybe it's not supported by your browser. :( Error: " + error);
+        }
+
+        function wait_to_load(){
+            var loop = window.setInterval(function(){
+                if (current_pos) {
+                    initMap();
+                    clearInterval(loop);
+                }
+            }, 1000);
+        }
+
+        function initMap() {
+            var customMapType = new google.maps.StyledMapType([{
+                "stylers": [{
+                    "invert_lightness": true
+                }, {
+                    "hue": "#ff00d4"
+                }]
+            }, {
+                "featureType": "water",
+                "stylers": [{
+                    "invert_lightness": true
+                }, {
+                    "color": "#9645e7"
+                }]
+            }, {
+                "featureType": "transit",
+                "stylers": [{
+                    "hue": "#ff002b"
+                }]
+            }, {
+                "featureType": "poi.park",
+                "stylers": [{
+                    "hue": "#00ff55"
+                }]
+            }, {
+                "featureType": "poi"
+            }], {
+                name: 'Ghoulish Style'
+            });
+            var customMapTypeId = 'custom_style';
+
+            // define a fixed zoom level
+            var Zoom = 16;
+
+            // get initial position
+            var map = new google.maps.Map(document.getElementById('map'), {
+                zoom: Zoom,
+                minZoom: Zoom,
+                maxZoom: Zoom,
+                center: current_pos,
+                disableDefaultUI: true,
+                draggable: false,
+                scrollwheel: false,
+                mapTypeControlOptions: {
+                    mapTypeIds: [google.maps.MapTypeId.ROADMAP, customMapTypeId]
+                }
+            });
+
+            map.mapTypes.set(customMapTypeId, customMapType);
+            map.setMapTypeId(customMapTypeId);
+
+            function moveToPosition(pos) {
+                map.panTo(pos);
+            }
+            window.map = map; //hack
+        }
+    </script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAKtPUCQgDEe0xOEmU-lMnNpGeWQ1id4lo&callback=wait_to_load">
+    </script>
+</body>
+
+</html>
