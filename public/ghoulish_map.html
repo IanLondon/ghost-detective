@@ -4,11 +4,14 @@
 <head>
     <title>Ghoulish map</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
-    <!--hide address bar-->
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta charset="utf-8">
     <style>
-        html,
+        html {
+            height: 100%;
+        }
+
         body {
             height: 100%;
             margin: 0;
@@ -32,7 +35,7 @@
 
         function updatePos(pos) {
             // re-center the map only if you've moved more than the specified threshold
-            var dist_thresh_km = 0.003048; // 0.003048 km ~= 10 ft.
+            var dist_thresh_km = 0.004572; // 0.004572 km ~= 15 ft.
             var center = map.getCenter();
             var delta_km = getDistanceFromLatLonInKm(pos.lat(), pos.lng(), center.lat(), center.lng());
             console.log("moved " + delta_km + " km.");
@@ -147,7 +150,16 @@
             //XXX: hack for debugging
             window.map = map;
         }
+
+        // try to make map fullscreen
+        var map_el = document.getElementById("map");
+        map_el.addEventListener("click", function(e) {
+            requestFullscreen(map_el);
+            console.log("requesting full screen...");
+        });
+
     </script>
+    <script src="fullscreen_helper.js"></script>
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAKtPUCQgDEe0xOEmU-lMnNpGeWQ1id4lo&callback=wait_to_load">
     </script>
 </body>
